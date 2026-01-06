@@ -1,48 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Square Hunter</title>
+  <title>Square Hunter v2</title>
   <style>
     body {
+      background: #0d0d0d;
+      color: #eee;
       font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
       text-align: center;
     }
     #game {
-      width: 400px;
-      height: 400px;
-      border: 2px solid white;
+      width: 420px;
+      height: 420px;
       margin: 20px auto;
+      border: 3px solid #444;
       position: relative;
       background: black;
+      overflow: hidden;
     }
     .target {
-      width: 40px;
-      height: 40px;
-      background: red;
+      width: 35px;
+      height: 35px;
+      background: crimson;
       position: absolute;
       cursor: pointer;
+    }
+    #hud {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
     }
     #message {
       margin-top: 15px;
       font-weight: bold;
+      color: gold;
     }
   </style>
 </head>
 <body>
 
-<h1>Square Hunter</h1>
-<p>Click the red square as many times as you can.</p>
+<h1>Square Hunter v2</h1>
+<p>Click fast. Think faster.</p>
 
 <div id="game"></div>
-<p>Score: <span id="score">0</span></p>
+
+<div id="hud">
+  <div>Score: <span id="score">0</span></div>
+  <div>Time: <span id="time">30</span>s</div>
+</div>
+
 <p id="message"></p>
 
 <script>
   let score = 0;
+  let timeLeft = 30;
+  let keyBuffer = "";
+  let clickTimes = [];
+
   const game = document.getElementById("game");
   const scoreEl = document.getElementById("score");
+  const timeEl = document.getElementById("time");
   const msg = document.getElementById("message");
 
   const square = document.createElement("div");
@@ -50,52 +67,71 @@
   game.appendChild(square);
 
   function moveSquare() {
-    square.style.left = Math.random() * 360 + "px";
-    square.style.top = Math.random() * 360 + "px";
+    square.style.left = Math.random() * 385 + "px";
+    square.style.top = Math.random() * 385 + "px";
+  }
+
+  function gameOver() {
+    square.remove();
+    msg.textContent = "Game over.";
   }
 
   square.onclick = () => {
     score++;
     scoreEl.textContent = score;
+    clickTimes.push(Date.now());
     moveSquare();
-
-    if (score === 10) {
-      msg.textContent = "You are doing well...";
-    }
-
-    checkSecret();
+    checkEggOne();
+    checkEggTwo();
   };
+
+  document.addEventListener("keydown", e => {
+    keyBuffer += e.key.toLowerCase();
+    keyBuffer = keyBuffer.slice(-12);
+  });
+
+  function checkEggOne() {
+    if (score === 15 && keyBuffer.includes("unlock")) {
+      activateEggOne();
+    }
+  }
+
+  function checkEggTwo() {
+    if (score >= 20) {
+      const recentClicks = clickTimes.filter(t => Date.now() - t < 3000);
+      if (recentClicks.length >= 7) {
+        activateEggTwo();
+      }
+    }
+  }
+
+  function activateEggOne() {
+    game.style.borderColor = "lime";
+    square.style.background = "lime";
+    msg.textContent = "EASTER EGG #1: Cheat Code Accepted";
+    console.log("FLAG{keys_are_not_secrets}");
+  }
+
+  function activateEggTwo() {
+    game.style.background = "#001a1a";
+    square.style.background = "cyan";
+    msg.textContent = "EASTER EGG #2: Speed Runner Mode";
+    console.log("FLAG{behavior_can_be_a_trigger}");
+  }
 
   moveSquare();
 
-  /* 
-    ================================
-    Nothing interesting down here.
-    Definitely no secrets.
-    ================================
-  */
+  const timer = setInterval(() => {
+    timeLeft--;
+    timeEl.textContent = timeLeft;
+    moveSquare();
 
-  let keyBuffer = "";
-
-  document.addEventListener("keydown", (e) => {
-    keyBuffer += e.key.toLowerCase();
-    keyBuffer = keyBuffer.slice(-10);
-  });
-
-  function checkSecret() {
-    if (score === 13 && keyBuffer.includes("unlock")) {
-      activateEasterEgg();
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      gameOver();
     }
-  }
-
-  function activateEasterEgg() {
-    game.style.background = "darkgreen";
-    square.style.background = "gold";
-    msg.textContent = "EASTER EGG FOUND: Developer Mode Unlocked";
-    console.log("FLAG{client_side_secrets_are_never_secret}");
-  }
+  }, 1000);
 </script>
 
 </body>
 </html>
-
