@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vulnerable Test Site</title>
+</head>
+<body>
+  <h1>Vulnerable Practice Site</h1>
+
+  <h2>1. Reflected Input (XSS)</h2>
+  <p>Enter text:</p>
+  <input id="input">
+  <button onclick="showInput()">Submit</button>
+  <div id="output"></div>
+
+  <h2>2. URL Parameter Injection</h2>
+  <p>Try: <code>?name=YourName</code></p>
+  <div id="name"></div>
+
+  <h2>3. Fake Login (Client-Side Auth)</h2>
+  <input id="user" placeholder="Username">
+  <input id="pass" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p id="loginStatus"></p>
+
+  <script>
+    function showInput() {
+      const val = document.getElementById("input").value;
+      document.getElementById("output").innerHTML = val;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name");
+    if (name) {
+      document.getElementById("name").innerHTML = "Hello " + name;
+    }
+
+    function login() {
+      const user = document.getElementById("user").value;
+      const pass = document.getElementById("pass").value;
+
+      if (user === "admin" && pass === "password") {
+        document.getElementById("loginStatus").innerHTML = "Logged in as admin";
+      } else {
+        document.getElementById("loginStatus").innerHTML = "Login failed";
+      }
+    }
+  </script>
+</body>
+</html>
