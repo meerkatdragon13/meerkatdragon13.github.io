@@ -1,49 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vulnerable Test Site</title>
+  <title>Square Hunter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
+    #game {
+      width: 400px;
+      height: 400px;
+      border: 2px solid white;
+      margin: 20px auto;
+      position: relative;
+      background: black;
+    }
+    .target {
+      width: 40px;
+      height: 40px;
+      background: red;
+      position: absolute;
+      cursor: pointer;
+    }
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <h1>Vulnerable Practice Site</h1>
 
-  <h2>1. Reflected Input (XSS)</h2>
-  <p>Enter text:</p>
-  <input id="input">
-  <button onclick="showInput()">Submit</button>
-  <div id="output"></div>
+<h1>Square Hunter</h1>
+<p>Click the red square as many times as you can.</p>
 
-  <h2>2. URL Parameter Injection</h2>
-  <p>Try: <code>?name=YourName</code></p>
-  <div id="name"></div>
+<div id="game"></div>
+<p>Score: <span id="score">0</span></p>
+<p id="message"></p>
 
-  <h2>3. Fake Login (Client-Side Auth)</h2>
-  <input id="user" placeholder="Username">
-  <input id="pass" placeholder="Password">
-  <button onclick="login()">Login</button>
-  <p id="loginStatus"></p>
+<script>
+  let score = 0;
+  const game = document.getElementById("game");
+  const scoreEl = document.getElementById("score");
+  const msg = document.getElementById("message");
 
-  <script>
-    function showInput() {
-      const val = document.getElementById("input").value;
-      document.getElementById("output").innerHTML = val;
+  const square = document.createElement("div");
+  square.className = "target";
+  game.appendChild(square);
+
+  function moveSquare() {
+    square.style.left = Math.random() * 360 + "px";
+    square.style.top = Math.random() * 360 + "px";
+  }
+
+  square.onclick = () => {
+    score++;
+    scoreEl.textContent = score;
+    moveSquare();
+
+    if (score === 10) {
+      msg.textContent = "You are doing well...";
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const name = params.get("name");
-    if (name) {
-      document.getElementById("name").innerHTML = "Hello " + name;
-    }
+    checkSecret();
+  };
 
-    function login() {
-      const user = document.getElementById("user").value;
-      const pass = document.getElementById("pass").value;
+  moveSquare();
 
-      if (user === "admin" && pass === "password") {
-        document.getElementById("loginStatus").innerHTML = "Logged in as admin";
-      } else {
-        document.getElementById("loginStatus").innerHTML = "Login failed";
-      }
+  /* 
+    ================================
+    Nothing interesting down here.
+    Definitely no secrets.
+    ================================
+  */
+
+  let keyBuffer = "";
+
+  document.addEventListener("keydown", (e) => {
+    keyBuffer += e.key.toLowerCase();
+    keyBuffer = keyBuffer.slice(-10);
+  });
+
+  function checkSecret() {
+    if (score === 13 && keyBuffer.includes("unlock")) {
+      activateEasterEgg();
     }
-  </script>
+  }
+
+  function activateEasterEgg() {
+    game.style.background = "darkgreen";
+    square.style.background = "gold";
+    msg.textContent = "EASTER EGG FOUND: Developer Mode Unlocked";
+    console.log("FLAG{client_side_secrets_are_never_secret}");
+  }
+</script>
+
 </body>
 </html>
+
